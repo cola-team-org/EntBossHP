@@ -39,7 +39,9 @@ jobs:
       - name: Get Version from build.yaml
         id: get_version
         run: |
-          echo "VERSION=$(grep 'version:' build.yaml | sed 's/version: *//')" >> $GITHUB_OUTPUT
+          VERSION=$(grep 'version:' build.yaml | sed 's/version: *//')
+          VERSION=${VERSION#v}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Create Release
         id: create_release
