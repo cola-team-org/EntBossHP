@@ -18,12 +18,19 @@ namespace EntBossHP
         public int LastHP { get; set; }
         public double LastHit { get; set; }
         public BossType Type { get; set; }
+        public bool Enabled { get; set; }
     }
 
     public class BreakableBoss : BossData
     {
         public CEntityInstance BreakableEntity { get; set; }
         public string BreakableEntityName { get; set; }
+        public bool IsSegmented { get; set; } = false;
+        public string HealthSegmentCounterName { get; set; }
+        public CEntityInstance HealthSegmentCounterEntity { get; set; }
+        public int HealthSegments { get; set; }
+        public int TotalHealthSegments { get; set; }
+        public int HealthSegmentCounterMode { get; set; } = 1;
     }
 
     public class MathCounterBoss : BossData
@@ -31,11 +38,15 @@ namespace EntBossHP
         public CEntityInstance MathCounterEntity { get; set; }
         public int MathCounterHitMode { get; set; } = -1;
         public string MathCounterName { get; set; }
-
-        // More data
         public int MathCounterStartValue { get; set; }
         public int MathCounterMaxValue { get; set; }
         public int MathCounterMinValue { get; set; }
+        public bool IsSegmented { get; set; } = false;
+        public string HealthSegmentCounterName { get; set; }
+        public CEntityInstance HealthSegmentCounterEntity { get; set; }
+        public int HealthSegments { get; set; }
+        public int TotalHealthSegments { get; set; }
+        public int HealthSegmentCounterMode { get; set; } = 1;
     }
 
     public class HPBarBoss : MathCounterBoss

@@ -19,8 +19,17 @@ namespace EntBossHP
         [JsonProperty(PropertyName = "name")]
         public string Name { get; set; }
 
+        [JsonProperty(PropertyName = "enabled")]
+        public bool Enabled { get; set; } = true;
+
         [JsonProperty(PropertyName = "breakable")]
         public string Breakable {  get; set; }
+
+        [JsonProperty(PropertyName = "health_segment_counter")]
+        public string HealthSegmentCounter { get; set; }
+
+        [JsonProperty(PropertyName = "health_segment_counter_mode")]
+        public int HealthSegmentCounterMode { get; set; } = 1;
     }
 
     public class MathCounterConfig
@@ -28,17 +37,29 @@ namespace EntBossHP
         [JsonProperty(PropertyName = "name")]
         public string Name { get; set; }
 
+        [JsonProperty(PropertyName = "enabled")]
+        public bool Enabled { get; set; } = true;
+
         [JsonProperty(PropertyName = "mathcounter")]
         public string MathCounter { get; set; }
 
         [JsonProperty(PropertyName = "mathcounter_mode")]
         public int MathCounterMode { get; set; } = 1;
+
+        [JsonProperty(PropertyName = "health_segment_counter")]
+        public string HealthSegmentCounter { get; set; }
+
+        [JsonProperty(PropertyName = "health_segment_counter_mode")]
+        public int HealthSegmentCounterMode { get; set; } = 1;
     }
 
     public class HPBarConfig
     {
         [JsonProperty(PropertyName = "name")]
         public string Name { get; set; }
+
+        [JsonProperty(PropertyName = "enabled")]
+        public bool Enabled { get; set; } = true;
 
         [JsonProperty(PropertyName = "mathcounter")]
         public string MathCounter { get; set; }

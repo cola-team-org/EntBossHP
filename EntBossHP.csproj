@@ -1,16 +1,45 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Library</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	  <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+    <GenerateDependencyFile>true</GenerateDependencyFile>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.279" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+    
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.*">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
+
+    
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  
+  <Target Name="StripRuntimesFolder" AfterTargets="Build">
+    <RemoveDir Directories="$(OutDir)runtimes" />
+  </Target>
+
+  
+  <ItemGroup>
+    <None Remove="bin\**" />
+    <None Remove="obj\**" />
+    <None Remove=".github\**" />
+    <None Remove="build\**" />
+    <None Remove="**\*.pdb" />
+    <None Remove="**\*.md" />
+    <None Remove="**\*.yml" />
+    <None Remove="**\*.yaml" />
   </ItemGroup>
 </Project>
