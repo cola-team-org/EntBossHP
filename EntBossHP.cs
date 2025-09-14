@@ -4,10 +4,11 @@ using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
+using CounterStrikeSharp.API.Modules.Timers;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions; 
+using System.Text.RegularExpressions;
 using static CounterStrikeSharp.API.Core.Listeners;
 
 namespace EntBossHP
@@ -15,7 +16,7 @@ namespace EntBossHP
     public class EntBossHP : BasePlugin
     {
         public override string ModuleName => "EntBossHP";
-        public override string ModuleVersion => "2.2";
+        public override string ModuleVersion => "1.0.1";
         public override string ModuleAuthor => "Oylsister, Credits to Kxrnl, DarkerZ [RUS] / modified by Tsukasa";
         
         public string PluginConfigDirectory => Path.Combine(ModuleDirectory, "..", "..", "configs", "plugins", ModuleName);
@@ -50,6 +51,8 @@ namespace EntBossHP
             RegisterListener<OnEntityCreated>(OnEntityCreated);
 
             AddCommand("boss_list", "", CommandBossList);
+
+            AddTimer(1.0f, CheckInactiveBosses, TimerFlags.REPEAT);
 
             if (hotReload)
             {
@@ -412,6 +415,27 @@ namespace EntBossHP
         public HookResult Hitbox_Hook(CEntityIOOutput output, string name, CEntityInstance activator, CEntityInstance caller, CVariant value, float delay)
         {
             return BreakableOut(output, name, activator, caller, value, delay);
+        }
+
+        public void CheckInactiveBosses()
+        {
+            if (activeBosses == null || activeBosses.Count == 0) return;
+
+            var currentTime = Server.EngineTime;
+            var bossesToRemove = new List<string>();
+
+            foreach (var boss in activeBosses.Values)
+            {
+                if (boss.LastHit > 0 && currentTime - boss.LastHit > 10.0f)
+                {
+                    bossesToRemove.Add(boss.BossName);
+                }
+            }
+
+            foreach (var bossName in bossesToRemove)
+            {
+                activeBosses.Remove(bossName);
+            }
         }
 
         private void UpdateAndDisplayBoss(BossData boss, CCSPlayerController client)
