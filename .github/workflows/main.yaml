@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - v2.0.0
 
 env:
   PLUGIN_VERSION: "2.0.0" # EDIT THIS LINE TO CREATE A NEW RELEASE
