@@ -16,7 +16,7 @@ namespace EntBossHP
     public class EntBossHP : BasePlugin
     {
         public override string ModuleName => "EntBossHP";
-        public override string ModuleVersion => "1.0.1";
+        public override string ModuleVersion => "2.0.0";
         public override string ModuleAuthor => "Oylsister, Credits to Kxrnl, DarkerZ [RUS] / modified by Tsukasa";
         
         public string PluginConfigDirectory => Path.Combine(ModuleDirectory, "..", "..", "configs", "plugins", ModuleName);
@@ -32,12 +32,16 @@ namespace EntBossHP
         bool configLoaded = false;
 
         public BossConfig BossConfigs;
+
+        public HitEventDisplay HitEventDisplay { get; private set; }
         
         public FakeConVar<bool> cvarEnableBhud = new FakeConVar<bool>("css_bosshp_enablebhud", "Enable bhud to print all entity that get damaged", true, ConVarFlags.FCVAR_NONE);
-        public FakeConVar<bool> cvarMultiBossHP = new FakeConVar<bool>("css_bosshp_multihp", "Showing multi boss hp in single Center text", false, ConVarFlags.FCVAR_NONE);
+        
 
         public override void Load(bool hotReload)
         {
+            HitEventDisplay = new HitEventDisplay(this);
+
             HookEntityOutput("math_counter", "OutValue", CounterOut);
             HookEntityOutput("func_physbox_multiplayer", "OnDamaged", BreakableOut);
             HookEntityOutput("func_physbox", "OnHealthChanged", BreakableOut);
@@ -52,7 +56,7 @@ namespace EntBossHP
 
             AddCommand("boss_list", "", CommandBossList);
 
-            AddTimer(1.0f, CheckInactiveBosses, TimerFlags.REPEAT);
+            AddTimer(5.0f, CheckInactiveBosses, TimerFlags.REPEAT);
 
             if (hotReload)
             {
@@ -185,6 +189,8 @@ namespace EntBossHP
                 Server.PrintToChatAll($" {ChatColors.Olive}[{ChatColors.Lime}EntBossHP{ChatColors.Olive}] {ChatColors.White}The current map is supported by this plugin.");
                 activeBosses?.Clear();
                 ResetBossHP();
+                
+                ResetAllBossHitCounts();
             }
             return HookResult.Continue;
         }
@@ -215,6 +221,24 @@ namespace EntBossHP
                 boss.IteratorValue = 0f;
                 boss.IteratorEntity = null;
                 boss.LastHit = 0f;
+            }
+        }
+
+        private void ResetAllBossHitCounts()
+        {
+            foreach(var boss in breakableBosses.Where(b => b != null))
+            {
+                boss.ResetSegmentStats();
+            }
+            
+            foreach(var boss in mathCounterBosses.Where(b => b != null))
+            {
+                boss.ResetSegmentStats();
+            }
+            
+            foreach(var boss in hpBarBosses.Where(b => b != null))
+            {
+                boss.ResetSegmentStats();
             }
         }
 
@@ -331,9 +355,14 @@ namespace EntBossHP
                     activeBosses.Remove(boss.BossName);
                     continue;
                 }
+                // 디버그 로그 제거됨
                 boss.Health = currentHp;
                 if (boss.MaxHealth < boss.Health) boss.MaxHealth = boss.Health;
-                UpdateAndDisplayBoss(boss, client);
+                
+                if (boss.Enabled)
+                {
+                    UpdateAndDisplayBoss(boss, client);
+                }
             }
             return HookResult.Continue;
         }
@@ -390,7 +419,11 @@ namespace EntBossHP
                 }
                 boss.Health = hp;
                 if (boss.MaxHealth <= 0) boss.MaxHealth = hp;
-                UpdateAndDisplayBoss(boss, client);
+                
+                if (boss.Enabled)
+                {
+                    UpdateAndDisplayBoss(boss, client);
+                }
             }
             return HookResult.Continue;
         }
@@ -410,6 +443,7 @@ namespace EntBossHP
             }
             resetAction.Invoke();
             boss.LastHP = boss.Health;
+            
         }
 
         public HookResult Hitbox_Hook(CEntityIOOutput output, string name, CEntityInstance activator, CEntityInstance caller, CVariant value, float delay)
@@ -417,19 +451,22 @@ namespace EntBossHP
             return BreakableOut(output, name, activator, caller, value, delay);
         }
 
+
         public void CheckInactiveBosses()
         {
             if (activeBosses == null || activeBosses.Count == 0) return;
 
-            var currentTime = Server.EngineTime;
+            var currentTime = DateTime.UtcNow.Ticks / TimeSpan.TicksPerSecond;
             var bossesToRemove = new List<string>();
 
             foreach (var boss in activeBosses.Values)
             {
-                if (boss.LastHit > 0 && currentTime - boss.LastHit > 10.0f)
+                if (!boss.Enabled || (boss.LastHit > 0 && currentTime - boss.LastHit > 60.0))
                 {
                     bossesToRemove.Add(boss.BossName);
                 }
+                
+                boss.CleanupInvalidPlayers();
             }
 
             foreach (var bossName in bossesToRemove)
@@ -440,58 +477,25 @@ namespace EntBossHP
 
         private void UpdateAndDisplayBoss(BossData boss, CCSPlayerController client)
         {
-            if (boss.LastHP > boss.Health) Print_BossHP();
+            if (boss.LastHP > 0 && boss.Health < boss.LastHP)
+            {
+                var damageDealt = boss.LastHP - boss.Health;
+                var dpsDamage = damageDealt > 100 ? 1 : damageDealt;
+                boss.IncrementHitCount(client, dpsDamage);
+            }
+
             boss.LastHP = boss.Health;
-            boss.LastHit = Server.EngineTime;
+            boss.LastHit = DateTime.UtcNow.Ticks / TimeSpan.TicksPerSecond;
+
             if (boss.Enabled)
             {
-                if (!activeBosses.ContainsKey(boss.BossName)) activeBosses.Add(boss.BossName, boss);
-                Print_SingleBossHP(client, boss);
+                if (!activeBosses.ContainsKey(boss.BossName)) 
+                    activeBosses.Add(boss.BossName, boss);
+                
+                HitEventDisplay.ShowHitEvent(client, boss, boss.Health, 0);
             }
         }
 
-        private void Print_BossHP()
-        {
-            if (!ShowingMultiBoss()) return;
-            var displayableBosses = activeBosses.Values.Where(b => b.Enabled && b.Health >= 0).ToList();
-            if (displayableBosses.Count == 0) return;
-            string message;
-            if (displayableBosses.Count == 1) message = FormatBossMessage(displayableBosses[0]);
-            else
-            {
-                var bossMessages = displayableBosses.Select(b =>
-                {
-                    var percent = b.MaxHealth > 0 ? (int)Math.Round((double)b.Health / b.MaxHealth * 100) : 100;
-                    return $"{b.BossName} : {b.Health} ({percent}%)";
-                });
-                message = string.Join("\n", bossMessages);
-            }
-            PrintToCenterAll(message);
-        }
-
-        private void Print_SingleBossHP(CCSPlayerController client, BossData boss)
-        {
-            if (ShowingMultiBoss() || client == null || !client.IsValid || !boss.Enabled || boss.Health < 0) return;
-            var message = FormatBossMessage(boss);
-            client.PrintToCenter(message);
-        }
-        
-        private string FormatBossMessage(BossData boss)
-        {
-            if (boss is MathCounterBoss mcBoss && mcBoss.IsSegmented) return $"{mcBoss.BossName} | Segments: {mcBoss.HealthSegments}\n{mcBoss.Health}/{mcBoss.MaxHealth} {CalculateHPBar(mcBoss.Health, mcBoss.MaxHealth)}";
-            if (boss is BreakableBoss bBoss && bBoss.IsSegmented) return $"{bBoss.BossName} | Segments: {bBoss.HealthSegments}\n{bBoss.Health}/{bBoss.MaxHealth} {CalculateHPBar(bBoss.Health, bBoss.MaxHealth)}";
-            return $"{boss.BossName}\n{boss.Health} {CalculateHPBar(boss.Health, boss.MaxHealth)}";
-        }
-        
-        private string CalculateHPBar(int hp, int maxhp)
-        {
-            if (maxhp <= 0) return "■■■■■■■■■■";
-            if (hp <= 0) return "□□□□□□□□□□";
-            float ratio = (float)hp / maxhp;
-            int filledBlocks = (int)Math.Round(ratio * 10);
-            filledBlocks = Math.Max(0, Math.Min(10, filledBlocks));
-            return new string('■', filledBlocks) + new string('□', 10 - filledBlocks);
-        }
 
         public static CCSPlayerController player(CEntityInstance instance)
         {
@@ -513,7 +517,6 @@ namespace EntBossHP
         }
 
         private bool IsBhudEnabled() => cvarEnableBhud.Value;
-        private bool ShowingMultiBoss() => cvarMultiBossHP.Value;
 
         private void SaveChanges()
         {
