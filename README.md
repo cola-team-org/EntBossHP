@@ -4,23 +4,23 @@ A Counter-Strike 2 plugin for displaying boss health information to players duri
 
 ## Overview
 
-EntBossHP tracks and displays the health of various entities (bosses) in CS2 maps, providing real-time HP information through center screen messages. The plugin supports multiple boss types including breakable entities, math counters, and HP bar systems.
+EntBossHP tracks and displays the health of configured boss entities in CS2 maps through center screen messages. The plugin supports breakable entities, math counters, and HP bar systems.
 
 ## Features
 
 - **Multiple Boss Types Support**:
-  - Breakable entities (func_physbox, func_breakable, prop_dynamic)
-  - Math counter entities 
+  - Breakable entities (`func_physbox`, `func_breakable`, `prop_dynamic`)
+  - Math counter entities
   - HP bar systems with iterator and backup counters
 
 - **Real-time HP Display**:
-  - Individual boss HP shown to attacking player
-  - Multi-boss HP display option for all players
+  - Boss HP shown to the attacking player
   - Visual HP bar with filled/empty blocks
+  - Optional HP offset per boss config
 
 - **Segmented Boss Support**:
   - Bosses with multiple health segments
-  - Automatic segment tracking and reset
+  - Remaining segment display
 
 - **Auto-configuration**:
   - Automatically detects and adds new boss entities
@@ -29,23 +29,26 @@ EntBossHP tracks and displays the health of various entities (bosses) in CS2 map
 
 ## Installation
 
-1. Install CounterStrikeSharp on your CS2 server
-2. Place the plugin files in your CounterStrikeSharp plugins directory
-3. Restart the server or load the plugin
+1. Install CounterStrikeSharp on your CS2 server.
+2. Place the plugin files in your CounterStrikeSharp plugins directory.
+3. Restart the server or load the plugin.
 
 ## Configuration
 
 ### Per-Map Configuration
+
 The plugin creates configuration files for each map in JSON format:
-```
+
+```text
 configs/plugins/EntBossHP/{mapname}.jsonc
 ```
 
 ### ConVars
-- `css_bosshp_enablebhud` - Enable debug output for entity damage (default: true)
-- `css_bosshp_multihp` - Show multi-boss HP in single center text (default: false)
+
+- `css_bosshp_enablebhud` - Enable boss HP center HUD output (default: true)
 
 ### Config File Structure
+
 ```json
 {
   "Breakable": [
@@ -54,7 +57,8 @@ configs/plugins/EntBossHP/{mapname}.jsonc
       "enabled": true,
       "breakable": "entity_name",
       "health_segment_counter": "counter_name",
-      "health_segment_counter_mode": 1
+      "health_segment_counter_mode": 1,
+      "hp_offset": 0
     }
   ],
   "MathCounter": [
@@ -64,7 +68,8 @@ configs/plugins/EntBossHP/{mapname}.jsonc
       "mathcounter": "counter_name",
       "mathcounter_mode": 1,
       "health_segment_counter": "segment_counter",
-      "health_segment_counter_mode": 1
+      "health_segment_counter_mode": 1,
+      "hp_offset": 0
     }
   ],
   "HPBar": [
@@ -75,7 +80,8 @@ configs/plugins/EntBossHP/{mapname}.jsonc
       "mathcounter_mode": 1,
       "iterator": "iterator_name",
       "iterator_mode": 1,
-      "backup": "backup_counter"
+      "backup": "backup_counter",
+      "hp_offset": 0
     }
   ]
 }
@@ -84,11 +90,13 @@ configs/plugins/EntBossHP/{mapname}.jsonc
 ## Boss Types
 
 ### 1. Breakable Boss
-- Monitors breakable entities like `func_physbox`, `func_breakable`, `prop_dynamic`
+
+- Monitors breakable entities like `func_physbox`, `func_breakable`, and `prop_dynamic`
 - Tracks entity health changes
-- Supports health restoration for segmented bosses
+- Supports segment counters for multi-phase bosses
 
 ### 2. Math Counter Boss
+
 - Uses `math_counter` entities to track boss HP
 - Supports different counter modes:
   - Mode 1: Direct counter value
@@ -96,6 +104,7 @@ configs/plugins/EntBossHP/{mapname}.jsonc
 - Auto-detects counter min/max values
 
 ### 3. HP Bar Boss
+
 - Advanced system using multiple math counters
 - Main counter for primary HP
 - Iterator counter for additional tracking
@@ -107,30 +116,31 @@ configs/plugins/EntBossHP/{mapname}.jsonc
 
 ## Display Features
 
-- **HP Bar Visualization**: `■■■■■□□□□□` (filled/empty blocks)
-- **Segmented Boss Display**: Shows remaining segments
-- **Multi-boss Mode**: Display multiple boss HPs simultaneously
-- **Auto-hide**: Bosses are hidden when HP reaches 0
+- **HP Bar Visualization**: filled/empty center HUD bar
+- **Segmented Boss Display**: shows remaining segments
+- **Auto-hide**: bosses are hidden when HP reaches 0
 
 ## Auto-Detection
 
 The plugin automatically detects new boss entities during gameplay:
+
 - Entities with HP > 10 are automatically added as enabled
-- Entities with HP ≤ 10 are added as disabled
+- Entities with HP <= 10 are added as disabled
 - Configuration is saved automatically
 
 ## Technical Details
 
-- **Version**: 2.2
+- **Version**: 2.1.0
 - **Author**: Oylsister, Credits to Kxrnl, DarkerZ [RUS] / modified by Tsukasa
-- **Dependencies**: CounterStrikeSharp
+- **Target Framework**: .NET 10
+- **Dependencies**: CounterStrikeSharp.API 1.0.369, Newtonsoft.Json 13.0.3
 - **Supported Entities**: math_counter, func_physbox_multiplayer, func_physbox, func_breakable, prop_dynamic
 
 ## Troubleshooting
 
-1. **Boss not appearing**: Check if the entity name matches the configuration
-2. **HP not updating**: Verify the entity is being damaged and outputs are firing
-3. **Configuration issues**: Check the JSON syntax in your map config file
+1. **Boss not appearing**: Check if the entity name matches the configuration.
+2. **HP not updating**: Verify the entity is being damaged and outputs are firing.
+3. **Configuration issues**: Check the JSON syntax in your map config file.
 
 ## License
 

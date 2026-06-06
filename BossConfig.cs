@@ -5,75 +5,84 @@ namespace EntBossHP
     public class BossConfig
     {
         [JsonProperty(PropertyName = "Breakable")]
-        public List<BreakableConfig> BreakableList { get; set; } = new List<BreakableConfig>();
+        public List<BreakableConfig> BreakableList { get; set; } = [];
 
         [JsonProperty(PropertyName = "MathCounter")]
-        public List<MathCounterConfig> MathCounterList { get; set; } = new List<MathCounterConfig>();
+        public List<MathCounterConfig> MathCounterList { get; set; } = [];
 
         [JsonProperty(PropertyName = "HPBar")]
-        public List<HPBarConfig> HPBarList { get; set; } = new List<HPBarConfig>();
+        public List<HPBarConfig> HPBarList { get; set; } = [];
     }
 
     public class BreakableConfig
     {
         [JsonProperty(PropertyName = "name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [JsonProperty(PropertyName = "enabled")]
         public bool Enabled { get; set; } = true;
 
         [JsonProperty(PropertyName = "breakable")]
-        public string Breakable {  get; set; }
+        public string Breakable { get; set; } = string.Empty;
 
         [JsonProperty(PropertyName = "health_segment_counter")]
-        public string HealthSegmentCounter { get; set; }
+        public string HealthSegmentCounter { get; set; } = string.Empty;
 
         [JsonProperty(PropertyName = "health_segment_counter_mode")]
         public int HealthSegmentCounterMode { get; set; } = 1;
+
+        [JsonProperty(PropertyName = "hp_offset")]
+        public int HpOffset { get; set; } = 0;
     }
 
     public class MathCounterConfig
     {
         [JsonProperty(PropertyName = "name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [JsonProperty(PropertyName = "enabled")]
         public bool Enabled { get; set; } = true;
 
         [JsonProperty(PropertyName = "mathcounter")]
-        public string MathCounter { get; set; }
+        public string MathCounter { get; set; } = string.Empty;
 
         [JsonProperty(PropertyName = "mathcounter_mode")]
         public int MathCounterMode { get; set; } = 1;
 
         [JsonProperty(PropertyName = "health_segment_counter")]
-        public string HealthSegmentCounter { get; set; }
+        public string HealthSegmentCounter { get; set; } = string.Empty;
 
         [JsonProperty(PropertyName = "health_segment_counter_mode")]
         public int HealthSegmentCounterMode { get; set; } = 1;
+
+        [JsonProperty(PropertyName = "hp_offset")]
+        public int HpOffset { get; set; } = 0;
     }
 
     public class HPBarConfig
     {
         [JsonProperty(PropertyName = "name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [JsonProperty(PropertyName = "enabled")]
         public bool Enabled { get; set; } = true;
 
         [JsonProperty(PropertyName = "mathcounter")]
-        public string MathCounter { get; set; }
+        public string MathCounter { get; set; } = string.Empty;
 
         [JsonProperty(PropertyName = "mathcounter_mode")]
         public int MathCounterMode { get; set; } = 1;
 
         [JsonProperty(PropertyName = "iterator")]
-        public string Iterator { get; set; }
+        public string Iterator { get; set; } = string.Empty;
 
         [JsonProperty(PropertyName = "iterator_mode")]
         public int IteratorMode { get; set; } = 1;
 
         [JsonProperty(PropertyName = "backup")]
-        public string Backup { get; set; }
+        public string Backup { get; set; } = string.Empty;
+
+        [JsonProperty(PropertyName = "hp_offset")]
+        public int HpOffset { get; set; } = 0;
     }
 }

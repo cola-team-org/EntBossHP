@@ -4,10 +4,9 @@ on:
   push:
     branches:
       - main
-      - v2.0.0
 
 env:
-  PLUGIN_VERSION: "2.0.0" # EDIT THIS LINE TO CREATE A NEW RELEASE
+  PLUGIN_VERSION: "2.1.0" # EDIT THIS LINE TO CREATE A NEW RELEASE
 
 jobs:
   build_and_release:
@@ -16,7 +15,7 @@ jobs:
       contents: write # Needed to create releases
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Needed for tag checking
 
@@ -33,9 +32,9 @@ jobs:
           fi
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Restore dependencies
         run: dotnet restore
@@ -63,25 +62,9 @@ jobs:
 
       - name: Create Release
         if: steps.check_tag.outputs.TAG_EXISTS == 'false'
-        id: create_release
-        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: EntBossHP-v${{ env.PLUGIN_VERSION }}
-          release_name: EntBossHP v${{ env.PLUGIN_VERSION }}
-          body: |
-            Automated release for version ${{ env.PLUGIN_VERSION }}
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset
-        if: steps.check_tag.outputs.TAG_EXISTS == 'false'
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./EntBossHP.zip
-          asset_name: EntBossHP.zip
-          asset_content_type: application/zip
+        run: |
+          gh release create "EntBossHP-v${{ env.PLUGIN_VERSION }}" ./EntBossHP.zip \
+            --title "EntBossHP v${{ env.PLUGIN_VERSION }}" \
+            --notes "Automated release for version ${{ env.PLUGIN_VERSION }}"
