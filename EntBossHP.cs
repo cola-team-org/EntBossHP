@@ -26,7 +26,7 @@ namespace EntBossHP
         private static partial Regex BossNameSuffixRegex();
 
         public override string ModuleName => "EntBossHP";
-        public override string ModuleVersion => "2.1.3";
+        public override string ModuleVersion => "2.1.4";
         public override string ModuleAuthor => "Oylsister, Credits to Kxrnl, DarkerZ [RUS] / modified by Tsukasa";
         
         public string PluginConfigDirectory => Path.Combine(ModuleDirectory, "..", "..", "configs", "plugins", ModuleName);
@@ -46,10 +46,10 @@ namespace EntBossHP
 
         private HitEventDisplay HitEventDisplay { get; set; } = null!;
 
-        // Store delegates to prevent GC collection which causes crashes
-        private BasePlugin.EntityOutputHookDelegate? _counterOutDelegate;
-        private BasePlugin.EntityOutputHookDelegate? _breakableOutDelegate;
-        private BasePlugin.EntityOutputHookDelegate? _hitboxHookDelegate;
+        // Store delegates using the correct EntityOutputHandler type to prevent GC collection
+        private CounterStrikeSharp.API.Modules.Entities.EntityIO.EntityOutputHandler? _counterOutDelegate;
+        private CounterStrikeSharp.API.Modules.Entities.EntityIO.EntityOutputHandler? _breakableOutDelegate;
+        private CounterStrikeSharp.API.Modules.Entities.EntityIO.EntityOutputHandler? _hitboxHookDelegate;
 
         public override void Load(bool hotReload)
         {
