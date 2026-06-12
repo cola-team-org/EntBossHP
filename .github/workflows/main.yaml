@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  PLUGIN_VERSION: "2.1.4" # EDIT THIS LINE TO CREATE A NEW RELEASE
+  PLUGIN_VERSION: "2.1.5" # EDIT THIS LINE TO CREATE A NEW RELEASE
 
 jobs:
   build_and_release:
@@ -74,4 +74,8 @@ jobs:
           gh release delete "EntBossHP-v${{ env.PLUGIN_VERSION }}" --cleanup-tag -y || true
           gh release create "EntBossHP-v${{ env.PLUGIN_VERSION }}" ./EntBossHP.zip \
             --title "EntBossHP v${{ env.PLUGIN_VERSION }}" \
-            --notes "Automated release for version ${{ env.PLUGIN_VERSION }}"
+            --notes "Changelog:
+            
+            - Fix HUD name stealing bug where disabled configs could incorrectly hijack display names due to reversed string matching.
+            - Fix segment counter duplication by explicitly skipping existing health segment counters during auto-discovery.
+            - Fix prefix collision bug (e.g. lv1_boss_hp_left matching lv1_boss_hp) by switching to exact sanitized name equality instead of StartsWith."
