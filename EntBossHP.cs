@@ -26,7 +26,7 @@ namespace EntBossHP
         private static partial Regex BossNameSuffixRegex();
 
         public override string ModuleName => "EntBossHP";
-        public override string ModuleVersion => "2.1.4";
+        public override string ModuleVersion => "2.1.5";
         public override string ModuleAuthor => "Oylsister, Credits to Kxrnl, DarkerZ [RUS] / modified by Tsukasa";
         
         public string PluginConfigDirectory => Path.Combine(ModuleDirectory, "..", "..", "configs", "plugins", ModuleName);
@@ -325,7 +325,8 @@ namespace EntBossHP
 
                 if (configLoaded)
                 {
-                    if (!BossConfigs.MathCounterList.Any(b => MatchesEntityName(entityname, b.MathCounter)))
+                    var isSegmentCounter = BossConfigs.MathCounterList.Any(b => MatchesEntityName(entityname, b.HealthSegmentCounter)) || BossConfigs.BreakableList.Any(b => MatchesEntityName(entityname, b.HealthSegmentCounter));
+                    if (!isSegmentCounter && !BossConfigs.MathCounterList.Any(b => MatchesEntityName(entityname, b.MathCounter)))
                     {
                         var sanitizedName = SanitizeBossName(entityname);
                         if (!BossConfigs.MathCounterList.Any(b => b.MathCounter == sanitizedName))
@@ -381,7 +382,8 @@ namespace EntBossHP
 
                 if (configLoaded)
                 {
-                     if (!BossConfigs.BreakableList.Any(b => MatchesEntityName(entityname, b.Breakable)))
+                     var isSegmentCounter = BossConfigs.MathCounterList.Any(b => MatchesEntityName(entityname, b.HealthSegmentCounter)) || BossConfigs.BreakableList.Any(b => MatchesEntityName(entityname, b.HealthSegmentCounter));
+                     if (!isSegmentCounter && !BossConfigs.BreakableList.Any(b => MatchesEntityName(entityname, b.Breakable)))
                      {
                         var sanitizedName = SanitizeBossName(entityname);
                         if (!BossConfigs.BreakableList.Any(b => b.Breakable == sanitizedName))
@@ -625,11 +627,11 @@ namespace EntBossHP
             }
         }
 
-        private static bool MatchesEntityName(string entityName, string configuredName)
+        private bool MatchesEntityName(string entityName, string configuredName)
         {
-            return !string.IsNullOrWhiteSpace(entityName)
-                && !string.IsNullOrWhiteSpace(configuredName)
-                && entityName.StartsWith(configuredName, StringComparison.Ordinal);
+            if (string.IsNullOrWhiteSpace(entityName) || string.IsNullOrWhiteSpace(configuredName)) return false;
+            if (entityName.Equals(configuredName, StringComparison.Ordinal)) return true;
+            return SanitizeBossName(entityName).Equals(configuredName, StringComparison.Ordinal);
         }
 
         private unsafe float GetMathCounterValue(nint handle)

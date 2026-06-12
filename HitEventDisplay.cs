@@ -149,7 +149,7 @@ namespace EntBossHP
         {
             return !string.IsNullOrEmpty(configuredName)
                 && !string.IsNullOrEmpty(sanitizedName)
-                && configuredName.StartsWith(sanitizedName, StringComparison.Ordinal);
+                && sanitizedName.StartsWith(configuredName, StringComparison.Ordinal);
         }
     }
 }
