@@ -26,7 +26,7 @@ namespace EntBossHP
         private static partial Regex BossNameSuffixRegex();
 
         public override string ModuleName => "EntBossHP";
-        public override string ModuleVersion => "2.1.1";
+        public override string ModuleVersion => "2.1.2";
         public override string ModuleAuthor => "Oylsister, Credits to Kxrnl, DarkerZ [RUS] / modified by Tsukasa";
         
         public string PluginConfigDirectory => Path.Combine(ModuleDirectory, "..", "..", "configs", "plugins", ModuleName);
@@ -46,16 +46,25 @@ namespace EntBossHP
 
         private HitEventDisplay HitEventDisplay { get; set; } = null!;
 
+        // Store delegates to prevent GC collection which causes crashes
+        private EntityOutputHookDelegate? _counterOutDelegate;
+        private EntityOutputHookDelegate? _breakableOutDelegate;
+        private EntityOutputHookDelegate? _hitboxHookDelegate;
+
         public override void Load(bool hotReload)
         {
             _playerPreferenceService = new PlayerPreferenceService(() => SettingsCapability.Get(), true);
             HitEventDisplay = new(this);
 
-            HookEntityOutput("math_counter", "OutValue", CounterOut);
-            HookEntityOutput("func_physbox_multiplayer", "OnDamaged", BreakableOut);
-            HookEntityOutput("func_physbox", "OnHealthChanged", BreakableOut);
-            HookEntityOutput("func_breakable", "OnHealthChanged", BreakableOut);
-            HookEntityOutput("prop_dynamic", "OnHealthChanged", Hitbox_Hook);
+            _counterOutDelegate = CounterOut;
+            _breakableOutDelegate = BreakableOut;
+            _hitboxHookDelegate = Hitbox_Hook;
+
+            HookEntityOutput("math_counter", "OutValue", _counterOutDelegate);
+            HookEntityOutput("func_physbox_multiplayer", "OnDamaged", _breakableOutDelegate);
+            HookEntityOutput("func_physbox", "OnHealthChanged", _breakableOutDelegate);
+            HookEntityOutput("func_breakable", "OnHealthChanged", _breakableOutDelegate);
+            HookEntityOutput("prop_dynamic", "OnHealthChanged", _hitboxHookDelegate);
 
             RegisterEventHandler<EventRoundStart>(OnRoundStart);
             RegisterListener<OnMapStart>(MapStart);
