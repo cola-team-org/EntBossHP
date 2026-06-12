@@ -26,7 +26,7 @@ namespace EntBossHP
         private static partial Regex BossNameSuffixRegex();
 
         public override string ModuleName => "EntBossHP";
-        public override string ModuleVersion => "2.1.2";
+        public override string ModuleVersion => "2.1.3";
         public override string ModuleAuthor => "Oylsister, Credits to Kxrnl, DarkerZ [RUS] / modified by Tsukasa";
         
         public string PluginConfigDirectory => Path.Combine(ModuleDirectory, "..", "..", "configs", "plugins", ModuleName);
@@ -47,9 +47,9 @@ namespace EntBossHP
         private HitEventDisplay HitEventDisplay { get; set; } = null!;
 
         // Store delegates to prevent GC collection which causes crashes
-        private EntityOutputHookDelegate? _counterOutDelegate;
-        private EntityOutputHookDelegate? _breakableOutDelegate;
-        private EntityOutputHookDelegate? _hitboxHookDelegate;
+        private BasePlugin.EntityOutputHookDelegate? _counterOutDelegate;
+        private BasePlugin.EntityOutputHookDelegate? _breakableOutDelegate;
+        private BasePlugin.EntityOutputHookDelegate? _hitboxHookDelegate;
 
         public override void Load(bool hotReload)
         {
@@ -659,8 +659,7 @@ namespace EntBossHP
                 configDirectory = Path.GetDirectoryName(configPath);
                 json = JsonSerializer.Serialize(BossConfigs, new JsonSerializerOptions
                 {
-                    WriteIndented = true,
-                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                    WriteIndented = true
                 });
             }
             catch (Exception ex)
